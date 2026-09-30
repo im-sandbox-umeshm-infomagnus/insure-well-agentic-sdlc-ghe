@@ -1,8 +1,10 @@
 package com.insurewell.controller;
 
 import com.insurewell.dto.PolicyDTO;
+import com.insurewell.dto.PolicyRenewalReminderDTO;
 import com.insurewell.model.Policy;
 import com.insurewell.repository.PolicyRepository;
+import com.insurewell.service.PolicyRenewalReminderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import java.security.Principal;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +27,9 @@ public class PolicyController {
 
   @Autowired
   private PolicyRepository policyRepository;
+
+  @Autowired
+  private PolicyRenewalReminderService renewalReminderService;
 
   private PolicyDTO toDTO(Policy policy) {
     return PolicyDTO.builder()
@@ -58,6 +64,14 @@ public class PolicyController {
       .map(this::toDTO)
       .collect(Collectors.toList());
     return ResponseEntity.ok(policies);
+  }
+
+  @GetMapping("/renewals")
+  public ResponseEntity<List<PolicyRenewalReminderDTO>> getRenewalReminders(Principal principal) {
+    if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    return ResponseEntity.ok(renewalReminderService.getReminders(principal.getName()));
   }
 
   @GetMapping("/{id}")

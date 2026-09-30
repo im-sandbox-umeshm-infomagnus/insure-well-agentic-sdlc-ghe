@@ -162,6 +162,38 @@
   margin-bottom: 2rem;
 }
 
+.renewal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.renewal-reminder {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.renewal-reminder > div:first-child,
+.renewal-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.renewal-reminder > div:first-child {
+  flex-wrap: wrap;
+}
+
+.renewal-reminder a {
+  color: #0066cc;
+}
+
 .section h2 {
   font-size: 1.3rem;
   margin-bottom: 1rem;
