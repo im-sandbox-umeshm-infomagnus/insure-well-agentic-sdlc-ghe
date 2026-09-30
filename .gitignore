@@ -2,6 +2,8 @@
 node_modules/
 src/frontend/node_modules/
 src/frontend/build/
+src/frontend/playwright-report/
+src/frontend/test-results/
 
 # Java / Spring Boot
 *.class

@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import '../styles/Dashboard.css';
 
-function Dashboard({ policies, claims, onRefresh, apiBase }) {
+function Dashboard({ policies, claims, renewalReminders = [], renewalRequiresAuthentication = false, onRefresh, apiBase }) {
   const [selectedPolicyId, setSelectedPolicyId] = useState(policies[0]?.id || null);
+  const [dismissedReminderIds, setDismissedReminderIds] = useState([]);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [formData, setFormData] = useState({
@@ -102,6 +103,47 @@ function Dashboard({ policies, claims, onRefresh, apiBase }) {
         </button>
       </div>
 
+      <section className="section renewal-reminders" data-testid="renewal-reminders">
+        <h2>Upcoming renewals</h2>
+        {renewalRequiresAuthentication ? (
+          <p className="empty" data-testid="renewal-auth-required">Sign in to view renewal reminders.</p>
+        ) : renewalReminders.length === 0 ? (
+          <p className="empty" data-testid="renewal-empty-state">No policies are nearing renewal.</p>
+        ) : renewalReminders.every(reminder => dismissedReminderIds.includes(reminder.policyId)) ? (
+          <p className="empty" data-testid="renewal-empty-state">All renewal reminders dismissed.</p>
+        ) : (
+          <ul className="renewal-list">
+            {renewalReminders.filter(reminder => !dismissedReminderIds.includes(reminder.policyId)).map(reminder => (
+              <li key={reminder.policyId} className="renewal-reminder" data-testid={`renewal-${reminder.policyId}`}>
+                <div>
+                  <strong>{reminder.planName}</strong>
+                  <span className="policy-id">Policy ID: {reminder.policyId}</span>
+                  <span>Ends {reminder.endDate} ({reminder.daysRemaining} calendar days remaining)</span>
+                </div>
+                <div className="renewal-actions">
+                  <a
+                    href="#policy-details"
+                    onClick={() => setSelectedPolicyId(reminder.policyId)}
+                    data-testid={`renewal-link-${reminder.policyId}`}
+                  >
+                    View policy details
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setDismissedReminderIds(ids => [...ids, reminder.policyId])}
+                    aria-label={`Dismiss reminder for ${reminder.policyId}`}
+                    data-testid={`dismiss-renewal-${reminder.policyId}`}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {selectedPolicy && (
         <>
           <div className="policy-tabs" data-testid="policy-tabs">
@@ -134,7 +176,7 @@ function Dashboard({ policies, claims, onRefresh, apiBase }) {
             ))}
           </div>
 
-          <div className="policy-card" data-testid="policy-card">
+          <div className="policy-card" id="policy-details" data-testid="policy-card">
             <div className="policy-header">
               <div>
                 <p className="policy-plan">{selectedPolicy.planName}</p>

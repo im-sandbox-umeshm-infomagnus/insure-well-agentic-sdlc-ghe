@@ -11,6 +11,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [policies, setPolicies] = useState([]);
   const [claims, setClaims] = useState([]);
+  const [renewalReminders, setRenewalReminders] = useState([]);
+  const [renewalRequiresAuthentication, setRenewalRequiresAuthentication] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -21,12 +23,20 @@ function App() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [policiesRes, claimsRes] = await Promise.all([
+      const [policiesRes, claimsRes, remindersRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/policies`),
         axios.get(`${API_BASE_URL}/claims`),
+        axios.get(`${API_BASE_URL}/policies/renewals`).catch(err => {
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            return { data: [], requiresAuthentication: true };
+          }
+          throw err;
+        }),
       ]);
       setPolicies(policiesRes.data);
       setClaims(claimsRes.data);
+      setRenewalReminders(remindersRes.data);
+      setRenewalRequiresAuthentication(remindersRes.requiresAuthentication || false);
       setError(null);
     } catch (err) {
       setError('Failed to load data from backend. Ensure Spring Boot server is running on port 8080.');
@@ -70,6 +80,8 @@ function App() {
           <Dashboard
             policies={policies}
             claims={claims}
+            renewalReminders={renewalReminders}
+            renewalRequiresAuthentication={renewalRequiresAuthentication}
             onRefresh={refreshData}
             apiBase={API_BASE_URL}
           />

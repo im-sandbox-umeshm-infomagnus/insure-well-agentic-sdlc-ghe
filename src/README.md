@@ -56,6 +56,7 @@ src/
 | GET    | `/api/policies`              | List all policies            |
 | POST   | `/api/policies`              | Create a policy              |
 | GET    | `/api/policies/{id}`         | Get a single policy          |
+| GET    | `/api/policies/renewals`     | List authenticated policyholder's upcoming renewals |
 | PATCH  | `/api/policies/{id}`         | Update a policy              |
 | DELETE | `/api/policies/{id}`         | Delete a policy              |
 | GET    | `/api/claims`                | List claims (filter by policy) |
@@ -80,7 +81,7 @@ src/
 ## Frontend
 
 **Pages:**
-1. **Dashboard** — View policies, manage policy lifecycle, see recent claims and statistics
+1. **Dashboard** — View policies, manage policy lifecycle, see recent claims and statistics, and dismiss reminders for active policies expiring within 30 days
 2. **Claims** — Submit new claims, view and filter claims, update claim status
 
 **Components:**
@@ -153,6 +154,7 @@ The frontend will open on **http://localhost:3000** and automatically connect to
 | `GET`   | `/api/policies`               | List all policies                  |
 | `POST`  | `/api/policies`               | Create a policy                    |
 | `GET`   | `/api/policies/{id}`          | Get a single policy                |
+| `GET`   | `/api/policies/renewals`      | List the authenticated policyholder's upcoming renewals |
 | `PATCH` | `/api/policies/{id}`          | Update a policy                    |
 | `DELETE`| `/api/policies/{id}`          | Delete a policy                    |
 | `GET`   | `/api/claims`                 | List all claims                    |
@@ -160,6 +162,8 @@ The frontend will open on **http://localhost:3000** and automatically connect to
 | `POST`  | `/api/claims`                 | Submit a new claim (multipart)     |
 | `PATCH` | `/api/claims/{id}/status`     | Update claim status                |
 | `DELETE`| `/api/claims/{id}`            | Delete a claim                     |
+
+`GET /api/policies/renewals` requires a request principal; its name is matched exactly to `Policy.holderName`. It returns active policies with end dates from today through 30 calendar days from today, inclusive, ordered by end date. Each item contains `policyId`, `planName`, `endDate`, and `daysRemaining` (0 for policies ending today). Requests without an authenticated principal receive `401 Unauthorized`. The standalone sample app does not configure an authentication provider, so deployments must integrate one that supplies the principal. On the dashboard, each reminder links to its policy details, and dismissal lasts only for the current page view.
 
 ### Claim submission payload
 
